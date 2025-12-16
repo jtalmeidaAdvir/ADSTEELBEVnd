@@ -21,21 +21,24 @@ namespace ADSTEELBEVnd.Sales
         {
             try
             {
+                // if tipo doc for igual a FA
+                if (this.TipoDoc == "FA") { 
+                
+                    var entidade = this.DocumentoVenda.Entidade;
 
-                var entidade = this.DocumentoVenda.Entidade;
-
-                if (entidade == "0001")
-                {
-                    // Perguntar ao utilizador
-                    var resposta = PSO.Dialogos.MostraMensagem(
-                        StdPlatBS100.StdBSTipos.TipoMsg.PRI_SimNao,
-                        "Deseja criar automaticamente a VFA na empresa MetalCarib?",
-                        StdPlatBS100.StdBSTipos.IconId.PRI_Questiona
-                    );
-
-                    if (resposta == StdPlatBS100.StdBSTipos.ResultMsg.PRI_Sim)
+                    if (entidade == "0001")
                     {
-                        CriarVfaMetalCarib();
+                        // Perguntar ao utilizador
+                        var resposta = PSO.Dialogos.MostraMensagem(
+                            StdPlatBS100.StdBSTipos.TipoMsg.PRI_SimNao,
+                            "Deseja criar automaticamente a VFA na empresa MetalCarib?",
+                            StdPlatBS100.StdBSTipos.IconId.PRI_Questiona
+                        );
+
+                        if (resposta == StdPlatBS100.StdBSTipos.ResultMsg.PRI_Sim)
+                        {
+                            CriarVfaMetalCarib();
+                        }
                     }
                 }
             }
@@ -99,8 +102,8 @@ namespace ADSTEELBEVnd.Sales
                 var linhaVenda = this.DocumentoVenda.Linhas.GetEdita(i);
 
                 double quantidade = linhaVenda.Quantidade;
-                string armazem = linhaVenda.Armazem; // ou mapear a partir da linha da venda
-                string localizacao = linhaVenda.Localizacao; // opcional
+                string armazem = "A001"; // ou mapear a partir da linha da venda
+                string localizacao = ""; // opcional
                 double precoUnitario = linhaVenda.PrecUnit;
                 double desconto1 = linhaVenda.Desconto1;
                 string lote = linhaVenda.Lote;
@@ -108,6 +111,12 @@ namespace ADSTEELBEVnd.Sales
                 double precoTaxaIva = linhaVenda.TaxaIva;
                 int arredondamento = this.DocumentoVenda.Arredondamento;
                 int arredondaIva = this.DocumentoVenda.ArredondamentoIva;
+                string obraid = linhaVenda.IDObra;
+                double varA = linhaVenda.VariavelA;
+                double varB = linhaVenda.VariavelB;
+                double varC = linhaVenda.VariavelC;
+
+                double quantFormula = linhaVenda.QuantFormula;
 
                 // Adiciona a linha ao documento de compras
                 bso.Compras.Documentos.AdicionaLinha(
@@ -119,7 +128,7 @@ namespace ADSTEELBEVnd.Sales
                     precoUnitario,
                     desconto1,
                     lote,       // Lote
-                    0, 0, 0, // QntVariavelA/B/C
+                    varA, varB, varC, // QntVariavelA/B/C
                     descEntidade,       // DescEntidade
                     0,
                     arredondamento,       // Arredondamento
@@ -128,6 +137,20 @@ namespace ADSTEELBEVnd.Sales
                     false,   // PrecoIvaIncluido
                     ref precoTaxaIva
                 );
+                // Preencher campos adicionais da linha recém-criada
+                var linhaDoc = doc.Linhas.GetEdita(doc.Linhas.NumItens); // pega a última linha adicionada
+             
+
+                var query1 = $"SELECT Codigo FROM [PRISTEELBE].[dbo].COP_Obras WHERE ID = '{obraid}'";
+                var codigoObra = bso.Consulta(query1).DaValor<string>("Codigo");
+                //PSO.MensagensDialogos.MostraMensagem(StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe, $"Obra ID: {codigoObra}");
+                var querybuscarCodigoobra = $"SELECT ID FROM [PRIMETALCARIB].[dbo].[COP_Obras] WHERE Codigo = '{codigoObra}'";
+                var id = bso.Consulta(querybuscarCodigoobra).DaValor<string>("ID");
+
+                linhaDoc.IDObra = id;
+                linhaDoc.QuantFormula = quantFormula;
+
+
             }
 
             // Gravar
