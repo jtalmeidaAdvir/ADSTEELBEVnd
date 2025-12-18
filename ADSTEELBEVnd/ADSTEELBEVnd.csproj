@@ -45,6 +45,9 @@
       <HintPath>..\..\..\..\..\..\Program Files\PRIMAVERA\SG100\APL\ErpBS100.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="IBasBS100">
+      <HintPath>..\..\..\..\..\..\Program Files\PRIMAVERA\SG100\Apl\IBasBS100.dll</HintPath>
+    </Reference>
     <Reference Include="ICmpBS100">
       <HintPath>..\..\..\..\..\..\Program Files\PRIMAVERA\SG100\APL\ICmpBS100.dll</HintPath>
       <Private>False</Private>

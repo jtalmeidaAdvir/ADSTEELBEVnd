@@ -22,3 +22,4 @@ C:\Users\jtalm\source\repos\ADSTEELBEVnd\ADSTEELBEVnd\bin\Debug\en\FuncoesComuns
 C:\Users\jtalm\source\repos\ADSTEELBEVnd\ADSTEELBEVnd\bin\Debug\es\FuncoesComuns100.resources.dll
 C:\Users\jtalm\source\repos\ADSTEELBEVnd\ADSTEELBEVnd\bin\Debug\fr\FuncoesComuns100.resources.dll
 C:\Users\jtalm\source\repos\ADSTEELBEVnd\ADSTEELBEVnd\bin\Debug\pt-cl\FuncoesComuns100.resources.dll
+C:\Users\jtalm\source\repos\ADSTEELBEVnd\ADSTEELBEVnd\bin\Debug\IBasBS100.dll
