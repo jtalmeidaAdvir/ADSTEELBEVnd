@@ -70,12 +70,12 @@ namespace ADSTEELBEVnd.Sales
 
             var trans = new StdBE100.StdBETransaccao();
 
-            pso.AbrePlataformaEmpresa("CLONEMC2", trans, conf,
+            pso.AbrePlataformaEmpresa("METALCARIB", trans, conf,
                 StdBE100.StdBETipos.EnumTipoPlataforma.tpEvolution);
 
             bso.AbreEmpresaTrabalho(
                 StdBE100.StdBETipos.EnumTipoPlataforma.tpEvolution,
-                "CLONEMC2",
+                "METALCARIB",
                 conf.Utilizador,
                 conf.PwdUtilizador,
                 trans,
@@ -166,7 +166,7 @@ namespace ADSTEELBEVnd.Sales
                             {
                                 var codigoObra = resultadoObra.DaValor<string>("Codigo");
 
-                                var querybuscarCodigoobra = $"SELECT ID FROM [PRICLONEMC2].[dbo].[COP_Obras] WHERE Codigo = '{codigoObra}'";
+                                var querybuscarCodigoobra = $"SELECT ID FROM [PRIMETALCARIB].[dbo].[COP_Obras] WHERE Codigo = '{codigoObra}'";
                                 var resultadoId = bso.Consulta(querybuscarCodigoobra);
 
                                 if (resultadoId != null && resultadoId.Vazia() == false)
