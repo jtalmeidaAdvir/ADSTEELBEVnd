@@ -17,6 +17,32 @@ namespace ADSTEELBEVnd.Sales
         public string TipoDoc => this.DocumentoVenda.Tipodoc;
         public string Serie => this.DocumentoVenda.Serie;
         public int numDoc => this.DocumentoVenda.NumDoc;
+
+        public override void TeclaPressionada(int KeyCode, int Shift, ExtensibilityEventArgs e)
+        {
+
+            // if tipo doc for igual a FA
+            if (this.TipoDoc == "FA")
+            {
+
+                var entidade = this.DocumentoVenda.Entidade;
+
+                if (entidade == "0001")
+                {
+                    // Perguntar ao utilizador
+                    var resposta = PSO.Dialogos.MostraMensagem(
+                        StdPlatBS100.StdBSTipos.TipoMsg.PRI_SimNao,
+                        "Deseja criar automaticamente a VFA na empresa MetalCarib?",
+                        StdPlatBS100.StdBSTipos.IconId.PRI_Questiona
+                    );
+
+                    if (resposta == StdPlatBS100.StdBSTipos.ResultMsg.PRI_Sim)
+                    {
+                        CriarVfaMetalCarib();
+                    }
+                }
+            }
+        }
         public override void AntesDeGravar(ref bool Cancel, ExtensibilityEventArgs e)
         {
             try
@@ -83,6 +109,20 @@ namespace ADSTEELBEVnd.Sales
             );
 
             var numDocExterno = $"{TipoDoc}.{Serie}/{numDoc}";
+
+            // VERIFICA SE JÁ EXISTE
+            string sqlVerifica = $"SELECT COUNT(*) AS Total FROM  [PRIMETALCARIB].[dbo].CabecCompras WHERE NumDocExterno = '{numDocExterno}' AND Tipodoc = 'VFA'";
+            var resultado = bso.Consulta(sqlVerifica);
+            if (resultado != null && resultado.DaValor<int>("Total") > 0)
+            {
+                PSO.Dialogos.MostraMensagem(
+                    StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe,
+                    $"Já existe uma VFA com o NumDocExterno {numDocExterno}. Não é possível criar uma nova.",
+                    StdPlatBS100.StdBSTipos.IconId.PRI_Critico
+                );
+                return; // Sai do método sem criar a nova VFA
+            }
+
             CmpBEDocumentoCompra doc = new CmpBEDocumentoCompra();
             doc.Tipodoc = "VFA";
             doc.DataDoc = DateTime.Today;
