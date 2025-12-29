@@ -38,6 +38,7 @@ namespace ADSTEELBEVnd.Sales
 
                     if (resposta == StdPlatBS100.StdBSTipos.ResultMsg.PRI_Sim)
                     {
+                        //PSO.MensagensDialogos.MostraMensagem(StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe, "A criar VFA na empresa MetalCarib...", StdPlatBS100.StdBSTipos.IconId.PRI_Informativo);
                         CriarVfaMetalCarib();
                     }
                 }
@@ -85,155 +86,169 @@ namespace ADSTEELBEVnd.Sales
             var pso = new StdPlatBS100.StdPlatBS();
             var bso = new ErpBS100.ErpBS();
 
-            var conf = new StdPlatBS100.StdBSConfApl
+            try
             {
-                AbvtApl = "ERP",
-                Instancia = "default",
-                Utilizador = "Cegid",
-                PwdUtilizador = "AdvirPlan@",
-                LicVersaoMinima = "10.00"
-            };
-
-            var trans = new StdBE100.StdBETransaccao();
-
-            pso.AbrePlataformaEmpresa("METALCARIB", trans, conf,
-                StdBE100.StdBETipos.EnumTipoPlataforma.tpEvolution);
-
-            bso.AbreEmpresaTrabalho(
-                StdBE100.StdBETipos.EnumTipoPlataforma.tpEvolution,
-                "METALCARIB",
-                conf.Utilizador,
-                conf.PwdUtilizador,
-                trans,
-                conf.Instancia
-            );
-
-            var numDocExterno = $"{TipoDoc}.{Serie}/{numDoc}";
-
-            // VERIFICA SE JÁ EXISTE
-            string sqlVerifica = $"SELECT COUNT(*) AS Total FROM  [PRIMETALCARIB].[dbo].CabecCompras WHERE NumDocExterno = '{numDocExterno}' AND Tipodoc = 'VFA'";
-            var resultado = bso.Consulta(sqlVerifica);
-            if (resultado != null && resultado.DaValor<int>("Total") > 0)
-            {
-                PSO.Dialogos.MostraMensagem(
-                    StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe,
-                    $"Já existe uma VFA com o NumDocExterno {numDocExterno}. Não é possível criar uma nova.",
-                    StdPlatBS100.StdBSTipos.IconId.PRI_Critico
-                );
-                return; // Sai do método sem criar a nova VFA
-            }
-
-            CmpBEDocumentoCompra doc = new CmpBEDocumentoCompra();
-            doc.Tipodoc = "VFA";
-            doc.DataDoc = DateTime.Today;
-            doc.TipoEntidade = "F";
-            doc.Entidade = "0001";
-            doc.NumDocExterno = numDocExterno;
-            bso.Compras.Documentos.PreencheDadosRelacionados(doc);
-
-            // Iterar sobre as linhas
-            for (int i = 1; i <= this.DocumentoVenda.Linhas.NumItens; i++)
-            {
-                var linhaVenda = this.DocumentoVenda.Linhas.GetEdita(i);
-
-                double quantidade = linhaVenda.Quantidade;
-                string armazem = "A001";
-                string localizacao = "";
-                double precoUnitario = linhaVenda.PrecUnit;
-                double desconto1 = linhaVenda.Desconto1;
-                string lote = linhaVenda.Lote;
-                double descEntidade = this.DocumentoVenda.DescEntidade;
-                double precoTaxaIva = linhaVenda.TaxaIva;
-                int arredondamento = this.DocumentoVenda.Arredondamento;
-                int arredondaIva = this.DocumentoVenda.ArredondamentoIva;
-                string obraid = linhaVenda.IDObra;
-                double varA = linhaVenda.VariavelA;
-                double varB = linhaVenda.VariavelB;
-                double varC = linhaVenda.VariavelC;
-                double quantFormula = linhaVenda.QuantFormula;
-                
-
-                bso.Compras.Documentos.AdicionaLinha(
-                    doc,
-                    linhaVenda.Artigo,
-                    ref quantidade,
-                    ref armazem,
-                    ref localizacao,
-                    precoUnitario,
-                    desconto1,
-                    lote,
-                    varA, varB, varC,
-                    descEntidade,
-                    0,
-                    arredondamento,
-                    arredondaIva,
-                    false,
-                    false,
-                    ref precoTaxaIva
-                );
-       
-
-                // CORREÇÃO: Verificar se a linha foi realmente adicionada
-                if (doc.Linhas.NumItens > 0)
+                var conf = new StdPlatBS100.StdBSConfApl
                 {
+                    AbvtApl = "ERP",
+                    Instancia = "default",
+                    Utilizador = "Cegid",
+                    PwdUtilizador = "AdvirPlan@",
+                    LicVersaoMinima = "10.00"
+                };
+
+                var trans = new StdBE100.StdBETransaccao();
+
+                pso.AbrePlataformaEmpresa(
+                    "METALCARIB",
+                    trans,
+                    conf,
+                    StdBE100.StdBETipos.EnumTipoPlataforma.tpEvolution
+                );
+
+                bso.AbreEmpresaTrabalho(
+                    StdBE100.StdBETipos.EnumTipoPlataforma.tpEvolution,
+                    "METALCARIB",
+                    conf.Utilizador,
+                    conf.PwdUtilizador,
+                    trans,
+                    conf.Instancia
+                );
+
+                var numDocExterno = $"{TipoDoc}.{Serie}/{numDoc}";
+
+                // VERIFICA SE JÁ EXISTE
+                string sqlVerifica =
+                    $"SELECT COUNT(*) AS Total " +
+                    $"FROM [PRIMETALCARIB].[dbo].CabecCompras " +
+                    $"WHERE NumDocExterno = '{numDocExterno}' AND Tipodoc = 'VFA'";
+
+                var resultado = bso.Consulta(sqlVerifica);
+
+                if (resultado != null && resultado.DaValor<int>("Total") > 0)
+                {
+                    PSO.Dialogos.MostraMensagem(
+                        StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe,
+                        $"Já existe uma VFA com o NumDocExterno {numDocExterno}.",
+                        StdPlatBS100.StdBSTipos.IconId.PRI_Critico
+                    );
+                    return;
+                }
+
+                CmpBEDocumentoCompra doc = new CmpBEDocumentoCompra
+                {
+                    Tipodoc = "VFA",
+                    DataDoc = DateTime.Today,
+                    TipoEntidade = "F",
+                    Entidade = "0001",
+                    Serie = "2025",
+                    NumDocExterno = numDocExterno
+                };
+
+                bso.Compras.Documentos.PreencheDadosRelacionados(doc);
+
+                // LINHAS
+                for (int i = 1; i <= this.DocumentoVenda.Linhas.NumItens; i++)
+                {
+                    var linhaVenda = this.DocumentoVenda.Linhas.GetEdita(i);
+                    if (string.IsNullOrWhiteSpace(linhaVenda.Artigo))
+                        continue; // ignora linhas sem artigo
+                    double quantidade = linhaVenda.Quantidade;
+                    string armazem = "A001";
+                    string localizacao = "";
+                    double precoUnitario = linhaVenda.PrecUnit;
+                    double desconto1 = linhaVenda.Desconto1;
+                    string lote = linhaVenda.Lote;
+                    double descEntidade = this.DocumentoVenda.DescEntidade;
+                    double precoTaxaIva = linhaVenda.TaxaIva;
+
+                    int linhasAntes = doc.Linhas.NumItens;
+
                     try
                     {
-                        // Obter o índice correto da última linha
-                        int indiceUltimaLinha = doc.Linhas.NumItens;
-                        var linhaDoc = doc.Linhas.GetEdita(indiceUltimaLinha);
-
-                        //se existir artigo
-                  
-
-                            if (!string.IsNullOrEmpty(linhaVenda.Artigo))
-                            {
-                            linhaDoc.TaxaIva = linhaVenda.TaxaIva;
-                            linhaDoc.CodIva = linhaVenda.CodIva;
-                            linhaDoc.CodIvaEcotaxa = linhaVenda.CodIvaEcotaxa;
-                            linhaDoc.Quantidade = linhaVenda.Quantidade;
-                        }
-
-     
-
-                       
-                        // Buscar obra apenas se IDObra não estiver vazia
-                        if (!string.IsNullOrEmpty(obraid))
-                        {
-                            var query1 = $"SELECT Codigo FROM [PRISTEELBE].[dbo].COP_Obras WHERE ID = '{obraid}'";
-                            var resultadoObra = bso.Consulta(query1);
-
-                            if (resultadoObra != null && resultadoObra.Vazia() == false)
-                            {
-                                var codigoObra = resultadoObra.DaValor<string>("Codigo");
-
-                                var querybuscarCodigoobra = $"SELECT ID FROM [PRIMETALCARIB].[dbo].[COP_Obras] WHERE Codigo = '{codigoObra}'";
-                                var resultadoId = bso.Consulta(querybuscarCodigoobra);
-
-                                if (resultadoId != null && resultadoId.Vazia() == false)
-                                {
-                                    var id = resultadoId.DaValor<string>("ID");
-                                    linhaDoc.IDObra = id;
-                                }
-                            }
-                        }
-
-                        linhaDoc.QuantFormula = quantFormula;
+                        bso.Compras.Documentos.AdicionaLinha(
+                            doc,
+                            linhaVenda.Artigo,
+                            ref quantidade,
+                            ref armazem,
+                            ref localizacao,
+                            precoUnitario,
+                            desconto1,
+                            lote,
+                            linhaVenda.VariavelA,
+                            linhaVenda.VariavelB,
+                            linhaVenda.VariavelB,
+                            descEntidade,
+                            0,
+                            this.DocumentoVenda.Arredondamento,
+                            this.DocumentoVenda.ArredondamentoIva,
+                            false,
+                            false,
+                            ref precoTaxaIva
+                        );
                     }
                     catch (Exception ex)
                     {
-                        // Log do erro específico da linha
-                        PSO.Dialogos.MostraMensagem(
-                            StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe,
-                            $"Erro ao processar linha {i}: {ex.Message}",
-                            StdPlatBS100.StdBSTipos.IconId.PRI_Critico
+                        throw new Exception(
+                            $"Erro ao adicionar o artigo '{linhaVenda.Artigo}' (linha {i}).\n{ex.Message}"
                         );
                     }
-                }
-            }
 
-            bso.Compras.Documentos.Actualiza(doc);
-            bso.FechaEmpresaTrabalho();
+                    // validação crítica
+                    if (doc.Linhas.NumItens <= linhasAntes)
+                    {
+                        throw new Exception(
+                            $"O artigo '{linhaVenda.Artigo}' não foi adicionado ao documento (linha {i})."
+                        );
+                    }
+
+
+                    // ✅ validação crítica
+                    if (doc.Linhas.NumItens <= linhasAntes)
+                    {
+                        throw new Exception($"Erro ao adicionar a linha {i} ({linhaVenda.Artigo}).");
+                    }
+
+                    var linhaDoc = doc.Linhas.GetEdita(doc.Linhas.NumItens);
+
+                    linhaDoc.TaxaIva = linhaVenda.TaxaIva;
+                    linhaDoc.CodIva = linhaVenda.CodIva;
+                    linhaDoc.CodIvaEcotaxa = linhaVenda.CodIvaEcotaxa;
+                    linhaDoc.Quantidade = linhaVenda.Quantidade;
+                    linhaDoc.QuantFormula = linhaVenda.QuantFormula;
+                   linhaDoc.Formula = linhaVenda.Formula; 
+                }
+
+
+                bso.Compras.Documentos.Actualiza(doc);
+
+                // ✅ SUCESSO
+                PSO.Dialogos.MostraMensagem(
+                    StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe,
+                    $"VFA criada com sucesso.\nDocumento externo: {numDocExterno}",
+                    StdPlatBS100.StdBSTipos.IconId.PRI_Informativo
+                );
+            }
+            catch (Exception ex)
+            {
+                // ❌ ERRO GLOBAL
+                PSO.Dialogos.MostraMensagem(
+                    StdPlatBS100.StdBSTipos.TipoMsg.PRI_Detalhe,
+                    $"Erro ao criar a VFA:\n{ex.Message}",
+                    StdPlatBS100.StdBSTipos.IconId.PRI_Critico
+                );
+            }
+            finally
+            {
+                // 🔒 FECHA SEMPRE
+                try
+                {
+                    bso.FechaEmpresaTrabalho();
+                }
+                catch { }
+            }
         }
+
 
     }
 }
