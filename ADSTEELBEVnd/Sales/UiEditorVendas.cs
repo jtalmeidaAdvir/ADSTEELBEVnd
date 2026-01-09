@@ -138,10 +138,10 @@ namespace ADSTEELBEVnd.Sales
                 CmpBEDocumentoCompra doc = new CmpBEDocumentoCompra
                 {
                     Tipodoc = "VFA",
-                    DataDoc = DateTime.Today,
+                    DataDoc = this.DocumentoVenda.DataDoc,
                     TipoEntidade = "F",
                     Entidade = "0001",
-                    Serie = "2025",
+                    Serie = this.DocumentoVenda.Serie,
                     NumDocExterno = numDocExterno
                 };
 
